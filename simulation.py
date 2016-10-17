@@ -2,6 +2,9 @@
 Created on Oct 12, 2016
 
 @author: mwitt_000
+@modified by:
+Megan Weller
+Ashley Bertrand
 '''
 import network
 import link
@@ -31,7 +34,7 @@ if __name__ == '__main__':
     #add all the links
     #client is output, router_a is input, 50 is largest size a packet can be to be transferred over a link
     link_layer.add_link(link.Link(client, 0, router_a, 0, 50))
-    link_layer.add_link(link.Link(router_a, 0, server, 0, 50))   #for part 2, change mtu to 30
+    link_layer.add_link(link.Link(router_a, 0, server, 0, 30))   #for part 2, change mtu to 30
     
     
     #start all the objects
