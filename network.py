@@ -30,6 +30,8 @@ class Interface:
 # from programming assignment 2).
 # NOTE: This class will need to be extended to for the packet to include
 # the fields necessary for the completion of this assignment.
+#part 2, implement segmentation (packet will be too large to fit through second link)
+#part 3, extend so you can tell where a packet is coming from
 class NetworkPacket:
     ## packet encoding lengths 
     dst_addr_S_length = 5
@@ -79,11 +81,18 @@ class Host:
     # @param dst_addr: destination address for the packet
     # @param data_S: data being transmitted to the network layer
     def udt_send(self, dst_addr, data_S):
-        p = NetworkPacket(dst_addr, data_S)
-        self.out_intf_L[0].put(p.to_byte_S()) #send packets always enqueued successfully
-        print('%s: sending packet "%s"' % (self, p))
+        #split large data into 2 packets
+        first_data, second_data = data_S[:len(data_S)//2], data_S[len(data_S)//2:]
+        p1 = NetworkPacket(dst_addr, first_data)
+        p2 = NetworkPacket(dst_addr, second_data)
+        self.out_intf_L[0].put(p1.to_byte_S()) #send packets always enqueued successfully
+        self.out_intf_L[0].put(p2.to_byte_S())
+        print('%s: sending packet "%s"' % (self, p1))
+        print('%s: sending packet "%s"' % (self, p2))
+        
         
     ## receive packet from the network layer
+    #part 2, put packets back together (based on packet's segmentation fields) before printing them out
     def udt_receive(self):
         pkt_S = self.in_intf_L[0].get()
         if pkt_S is not None:
@@ -130,6 +139,7 @@ class Router:
                 #if packet exists make a forwarding decision
                 if pkt_S is not None:
                     p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
+                    #part 3, implement routing table
                     # HERE you will need to implement a lookup into the 
                     # forwarding table to find the appropriate outgoing interface
                     # for now we assume the outgoing interface is also i

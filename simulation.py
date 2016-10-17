@@ -16,9 +16,10 @@ if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads
     
     #create network nodes
-    client = network.Host(1)
+    #part 3, add hosts, etc. (and make sure to start the threads)
+    client = network.Host(1)    #client has address 1
     object_L.append(client)
-    server = network.Host(2)
+    server = network.Host(2)    #server has address 2
     object_L.append(server)
     router_a = network.Router(name='A', intf_count=1, max_queue_size=router_queue_size)
     object_L.append(router_a)
@@ -28,8 +29,9 @@ if __name__ == '__main__':
     object_L.append(link_layer)
     
     #add all the links
+    #client is output, router_a is input, 50 is largest size a packet can be to be transferred over a link
     link_layer.add_link(link.Link(client, 0, router_a, 0, 50))
-    link_layer.add_link(link.Link(router_a, 0, server, 0, 50))
+    link_layer.add_link(link.Link(router_a, 0, server, 0, 50))   #for part 2, change mtu to 30
     
     
     #start all the objects
@@ -44,9 +46,14 @@ if __name__ == '__main__':
         t.start()
     
     
-    #create some send events    
+    #create some send events
+    #client transmits 3 packets
+    #part 1
+    #send message >= 80 characters
+    #modify udt_send to break larger data into different packets
     for i in range(3):
-        client.udt_send(2, 'Sample data %d' % i)
+        #client.udt_send(2, 'Sample data %d' % i) #sending data to host 2
+        client.udt_send(2, 'Adding characters so length is 80.*********************************Sample data %d' % i) #sending data to host 2
     
     
     #give the network sufficient time to transfer all packets before quitting
