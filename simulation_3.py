@@ -54,6 +54,7 @@ if __name__ == '__main__':
     thread_L = []
     thread_L.append(threading.Thread(name=client.__str__(), target=client.run))
     thread_L.append(threading.Thread(name=server.__str__(), target=server.run))
+    thread_L.append(threading.Thread(name=host3.__str__(), target=host3.run))
     thread_L.append(threading.Thread(name=router_a.__str__(), target=router_a.run))
     thread_L.append(threading.Thread(name=router_b.__str__(), target=router_b.run))
     thread_L.append(threading.Thread(name=router_c.__str__(), target=router_c.run))
