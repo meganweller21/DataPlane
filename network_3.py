@@ -85,7 +85,6 @@ class NetworkPacket:
 class Host:
     
     packet_data = ''
-    MTU = 30
     ##@param addr: address of this node represented as an integer
     def __init__(self, addr):
         self.addr = addr
@@ -103,7 +102,7 @@ class Host:
     def udt_send(self, dst_addr, data_S):
         #split large data into 2 packets
         first_data, second_data = data_S[:len(data_S)//2], data_S[len(data_S)//2:]
-        
+
         #Offset must be a factor of 8, the full address is 9 characters
         #We start by giving 16 bytes of the data, 16 in the second, and 8 bytes left over
         p1 = NetworkPacket(dst_addr, 16, 1, 0, first_data[:16])
