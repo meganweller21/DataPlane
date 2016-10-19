@@ -56,7 +56,7 @@ if __name__ == '__main__':
     #modify udt_send to break larger data into different packets
     for i in range(3):
         #client.udt_send(2, 'Sample data %d' % i) #sending data to host 2
-        client.udt_send(2, 'Adding characters so length is 80.*********************************Sample data %d' % i) #sending data to host 2
+        client.udt_send(2, 'Sample data %d' % i) #sending data to host 2
     
     
     #give the network sufficient time to transfer all packets before quitting
