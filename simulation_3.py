@@ -24,8 +24,16 @@ if __name__ == '__main__':
     object_L.append(client)
     server = network_3.Host(2)    #server has address 2
     object_L.append(server)
-    router_a = network_3.Router(name='A', intf_count=1, max_queue_size=router_queue_size)
+    host3 = network_3.Host(3)    #host3 has address 3
+    object_L.append(host3)
+    router_a = network_3.Router(name='A', intf_count=2, outf_count=2, max_queue_size=router_queue_size)
+    router_b = network_3.Router(name='B', intf_count=1, outf_count=1, max_queue_size=router_queue_size)
+    router_c = network_3.Router(name='C', intf_count=1, outf_count=1, max_queue_size=router_queue_size)
+    router_d = network_3.Router(name='D', intf_count=2, outf_count=1, max_queue_size=router_queue_size)
     object_L.append(router_a)
+    object_L.append(router_b)
+    object_L.append(router_c)
+    object_L.append(router_d)
     
     #create a Link Layer to keep track of links between network nodes
     link_layer = link_3.LinkLayer()
@@ -33,8 +41,13 @@ if __name__ == '__main__':
     
     #add all the links
     #client is output, router_a is input, 50 is largest size a packet can be to be transferred over a link
-    link_layer.add_link(link_3.Link(client, 0, router_a, 0, 50))
-    link_layer.add_link(link_3.Link(router_a, 0, server, 0, 30))   #for part 2, change mtu to 30
+    link_layer.add_link(link_3.Link(client, 0, router_a, 0, 50))   
+    link_layer.add_link(link_3.Link(server, 0, router_a, 0, 50))
+    link_layer.add_link(link_3.Link(router_a, 0, router_b, 0, 30))  #for part 2, change mtu to 30
+    link_layer.add_link(link_3.Link(router_a, 0, router_c, 0, 30))
+    link_layer.add_link(link_3.Link(router_b, 0, router_d, 0, 30))
+    link_layer.add_link(link_3.Link(router_c, 0, router_d, 0, 30))
+    link_layer.add_link(link_3.Link(router_d, 0, host3, 0, 30))
     
     
     #start all the objects
@@ -42,6 +55,9 @@ if __name__ == '__main__':
     thread_L.append(threading.Thread(name=client.__str__(), target=client.run))
     thread_L.append(threading.Thread(name=server.__str__(), target=server.run))
     thread_L.append(threading.Thread(name=router_a.__str__(), target=router_a.run))
+    thread_L.append(threading.Thread(name=router_b.__str__(), target=router_b.run))
+    thread_L.append(threading.Thread(name=router_c.__str__(), target=router_c.run))
+    thread_L.append(threading.Thread(name=router_d.__str__(), target=router_d.run))
     
     thread_L.append(threading.Thread(name="Network", target=link_layer.run))
     
