@@ -17,6 +17,9 @@ simulation_time = 1 #give the network sufficient time to transfer all packets be
 
 if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads
+
+    #routing table configuration
+    routing_table = [["A", "B", "D"], ["A", "C", "D"]]
     
     #create network nodes
     #part 3, add hosts, etc. (and make sure to start the threads)
@@ -26,10 +29,10 @@ if __name__ == '__main__':
     object_L.append(server)
     host3 = network_3.Host(3)    #host3 has address 3
     object_L.append(host3)
-    router_a = network_3.Router(name='A', intf_count=2, outf_count=2, max_queue_size=router_queue_size)
-    router_b = network_3.Router(name='B', intf_count=1, outf_count=1, max_queue_size=router_queue_size)
-    router_c = network_3.Router(name='C', intf_count=1, outf_count=1, max_queue_size=router_queue_size)
-    router_d = network_3.Router(name='D', intf_count=2, outf_count=1, max_queue_size=router_queue_size)
+    router_a = network_3.Router(name='A', intf_count=2, outf_count=2, max_queue_size=router_queue_size, routing_table = routing_table)
+    router_b = network_3.Router(name='B', intf_count=1, outf_count=1, max_queue_size=router_queue_size, routing_table = routing_table)
+    router_c = network_3.Router(name='C', intf_count=1, outf_count=1, max_queue_size=router_queue_size, routing_table = routing_table)
+    router_d = network_3.Router(name='D', intf_count=2, outf_count=1, max_queue_size=router_queue_size, routing_table = routing_table)
     object_L.append(router_a)
     object_L.append(router_b)
     object_L.append(router_c)

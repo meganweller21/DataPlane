@@ -43,15 +43,17 @@ class NetworkPacket:
     fragflag_length = 1
     length_length = 2
     offset_length = 1
+    source = ""
     
     ##@param dst_addr: address of the destination host
     # @param data_S: packet payload
-    def __init__(self, dst_addr, length, fragflag, offset, data_S):
+    def __init__(self, dst_addr, length, fragflag, offset, data_S, source):
         self.dst_addr = dst_addr
         self.data_S = data_S
         self.length = length
         self.fragflag = fragflag
         self.offset = offset
+        self.source = source
     
     ## called when printing the object
     def __str__(self):
@@ -67,6 +69,9 @@ class NetworkPacket:
         byte_S += str(self.offset)
         byte_S += self.data_S
         return byte_S
+
+    def get_source(self):
+        return self.source
     
     ## extract a packet object from a byte string
     # @param byte_S: byte string representation of the packet
@@ -77,8 +82,8 @@ class NetworkPacket:
         fragflag = int(byte_S[NetworkPacket.dst_addr_S_length + NetworkPacket.length_length : NetworkPacket.dst_addr_S_length + NetworkPacket.length_length + NetworkPacket.fragflag_length])
         offset = int(byte_S[NetworkPacket.dst_addr_S_length + NetworkPacket.fragflag_length + NetworkPacket.length_length : NetworkPacket.dst_addr_S_length + NetworkPacket.length_length + NetworkPacket.fragflag_length + NetworkPacket.offset_length])
         data_S = byte_S[NetworkPacket.dst_addr_S_length + NetworkPacket.fragflag_length + NetworkPacket.length_length + NetworkPacket.offset_length : ]
-
-        return self(dst_addr, length_s, fragflag, offset, data_S)
+        source = self.get_source(self)
+        return self(dst_addr, length_s, fragflag, offset, data_S, source)
     
 
 ## Implements a network host for receiving and transmitting data
@@ -105,13 +110,13 @@ class Host:
 
         #Offset must be a factor of 8, the full address is 9 characters
         #We start by giving 16 bytes of the data, 16 in the second, and 8 bytes left over
-        p1 = NetworkPacket(dst_addr, 16, 1, 0, first_data[:16])
-        p2 = NetworkPacket(dst_addr, 16, 1, int(16/8), first_data[16:32])
-        p3 = NetworkPacket(dst_addr, 8, 0, int(24/8), first_data[32:])
+        p1 = NetworkPacket(dst_addr, 16, 1, 0, first_data[:16], "client")
+        p2 = NetworkPacket(dst_addr, 16, 1, int(16/8), first_data[16:32], "source")
+        p3 = NetworkPacket(dst_addr, 8, 0, int(24/8), first_data[32:], "client")
 
-        p4 = NetworkPacket(dst_addr, 16, 1, 0, second_data[:16])
-        p5 = NetworkPacket(dst_addr, 16, 1, int(16/8), second_data[16:32])
-        p6 = NetworkPacket(dst_addr, 8, 0, int(24/8), second_data[32:])
+        p4 = NetworkPacket(dst_addr, 16, 1, 0, second_data[:16], "source")
+        p5 = NetworkPacket(dst_addr, 16, 1, int(16/8), second_data[16:32], "client")
+        p6 = NetworkPacket(dst_addr, 8, 0, int(24/8), second_data[32:], "source")
 
         #send packets always enqueued successfully
         self.out_intf_L[0].put(p1.to_byte_S()) 
@@ -167,12 +172,13 @@ class Router:
     # @param intf_count: the number of input interfaces 
     # @param outf_count: the number of output interfaces 
     # @param max_queue_size: max queue length (passed to Interface)
-    def __init__(self, name, intf_count, outf_count, max_queue_size):
+    def __init__(self, name, intf_count, outf_count, max_queue_size, routing_table):
         self.stop = False #for thread termination
         self.name = name
         #create a list of interfaces
         self.in_intf_L = [Interface(max_queue_size) for _ in range(intf_count)]
         self.out_intf_L = [Interface(max_queue_size) for _ in range(outf_count)]
+        self.routing_table = routing_table
 
     ## called when printing the object
     def __str__(self):
@@ -193,6 +199,13 @@ class Router:
                     # HERE you will need to implement a lookup into the 
                     # forwarding table to find the appropriate outgoing interface
                     # for now we assume the outgoing interface is also i
+                    print("Source:", p.get_source())
+                    if (p.get_source() == "client") :
+                        route = self.routing_table[0]
+                        print("ROUTE\n\n\n", route)
+                    elif (p.get_source() == "server"):
+                        route = self.routing_table[1]
+                        print("ROUTE\n\n\n", route)
                     self.out_intf_L[i].put(p.to_byte_S(), True)
                     print('%s: forwarding packet "%s" from interface %d to %d' % (self, p, i, i))
             except queue.Full:
