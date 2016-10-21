@@ -14,6 +14,7 @@ from time import sleep
 ##configuration parameters
 router_queue_size = 0 #0 means unlimited
 simulation_time = 1 #give the network sufficient time to transfer all packets before quitting
+mtu = 30
 
 if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads
@@ -34,7 +35,7 @@ if __name__ == '__main__':
     #add all the links
     #client is output, router_a is input, 50 is largest size a packet can be to be transferred over a link
     link_layer.add_link(link_2.Link(client, 0, router_a, 0, 50))
-    link_layer.add_link(link_2.Link(router_a, 0, server, 0, 30))   #for part 2, change mtu to 30
+    link_layer.add_link(link_2.Link(router_a, 0, server, 0, mtu))   #for part 2, change mtu to 30
     
     
     #start all the objects
@@ -55,7 +56,7 @@ if __name__ == '__main__':
     #send message >= 80 characters
     #modify udt_send to break larger data into different packets
     for i in range(3):
-        client.udt_send(2, 'Adding characters so length is 80.*********************************Sample data %d' % i) #sending data to host 2
+        client.udt_send(2, 'Adding characters so length is 80.*********************************Sample data %d' % i, mtu) #sending data to host 2
     
     
     #give the network sufficient time to transfer all packets before quitting
