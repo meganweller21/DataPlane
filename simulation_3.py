@@ -13,7 +13,7 @@ from time import sleep
 
 ##configuration parameters
 router_queue_size = 0 #0 means unlimited
-simulation_time = 1 #give the network sufficient time to transfer all packets before quitting
+simulation_time = 6 #give the network sufficient time to transfer all packets before quitting
 
 if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads
@@ -74,10 +74,10 @@ if __name__ == '__main__':
     #send message >= 80 characters
     #modify udt_send to break larger data into different packets
     #Changed to 1 for testing purposes
-    for i in range(1):
+    for i in range(3):
         #Switching between sending host 1 and host 2 to see the output
-        #host1.udt_send(3, 0, 'Adding characters so length is 80, please send to host 3 from host 1**********%d' % i, mtu)
-        host2.udt_send(3, 1, 'Adding characters so length is 80, please send to host 3 from host 2**********%d' % i, mtu)
+        host1.udt_send(3, 0, 'Adding characters so length is 80, please send to host 3 from host 1****packet %d' % i, mtu)
+        host2.udt_send(3, 1, 'Adding characters so length is 80, please send to host 3 from host 2****packet %d' % i, mtu)
                            
     
     
