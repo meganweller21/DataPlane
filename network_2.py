@@ -97,40 +97,24 @@ class Host:
     # @param data_S: data being transmitted to the network layer
     def udt_send(self, dst_addr, data_S, mtu):
         #split large data into 2 packets
-        first_data, second_data = data_S[:len(data_S)//2], data_S[len(data_S)//2:]
+        #first_data, second_data = data_S[:len(data_S)//2], data_S[len(data_S)//2:]
 
         packets = []
-        length_fd = len(first_data)
-        length_sd = len(second_data)
+        length_d = len(data_S)
         start = 0
         end = 0
         
-        while (length_fd > 0):
-            if (length_fd + NetworkPacket.full_length > mtu):
+        while (length_d > 0):
+            if (length_d + NetworkPacket.full_length > mtu):
                 data_l = mtu - NetworkPacket.full_length
                 end+=data_l
-                p = NetworkPacket(dst_addr, data_l, 1, first_data[start:data_l])
+                p = NetworkPacket(dst_addr, data_l, 1, data_S[start:end])
                 packets.append(p)
                 start+=data_l
-                length_fd-=data_l
+                length_d-=data_l
             else:
-                p = NetworkPacket(dst_addr, length_fd, 0, first_data[start:])
-                length_fd= 0
-                packets.append(p)
-
-        start = 0
-        end = 0
-        while (length_sd > 0):
-            if (length_sd + NetworkPacket.full_length > mtu):
-                data_l = mtu - NetworkPacket.full_length
-                end+=data_l
-                p = NetworkPacket(dst_addr, data_l, 1, second_data[start:data_l])
-                start+=data_l
-                length_sd-=data_l
-                packets.append(p)
-            else:
-                p = NetworkPacket(dst_addr, length_sd, 0, second_data[start:])
-                length_sd = 0
+                p = NetworkPacket(dst_addr, length_d, 0, data_S[start:])
+                length_d= 0
                 packets.append(p)
 
         for p in packets:
@@ -143,7 +127,7 @@ class Host:
     def udt_receive(self):
         pkt_S = self.in_intf_L[0].get()
         if pkt_S is not None:
-            #Get the fragment flag... could use the offset?
+            #Get the fragment flag
             fragflag = int (pkt_S[NetworkPacket.dst_addr_S_length + NetworkPacket.length_length : NetworkPacket.dst_addr_S_length + NetworkPacket.fragflag_length + NetworkPacket.length_length])
 
             #If the fragflag is 1, not complete
