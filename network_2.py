@@ -97,8 +97,7 @@ class Host:
     # @param data_S: data being transmitted to the network layer
     def udt_send(self, dst_addr, data_S, mtu):
         #split large data into 2 packets
-        #first_data, second_data = data_S[:len(data_S)//2], data_S[len(data_S)//2:]
-
+    
         packets = []
         length_d = len(data_S)
         start = 0

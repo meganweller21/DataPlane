@@ -17,16 +17,16 @@ simulation_time = 1 #give the network sufficient time to transfer all packets be
 
 if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads
-
+    mtu = 30
     #routing table configuration
-    routing_table = [["A", "B", "D"], ["A", "C", "D"]]
+    routing_table = [[['A', 0], ['B', 0], ['D',0]], [['A',1], ['C',0], ['D',0]]]
     
     #create network nodes
     #part 3, add hosts, etc. (and make sure to start the threads)
-    client = network_3.Host(1)    #client has address 1
-    object_L.append(client)
-    server = network_3.Host(2)    #server has address 2
-    object_L.append(server)
+    host1 = network_3.Host(1)    #host1 has address 1
+    object_L.append(host1)
+    host2 = network_3.Host(2)    #host2 has address 2
+    object_L.append(host2)
     host3 = network_3.Host(3)    #host3 has address 3
     object_L.append(host3)
     router_a = network_3.Router(name='A', intf_count=2, outf_count=2, max_queue_size=router_queue_size, routing_table = routing_table)
@@ -43,20 +43,19 @@ if __name__ == '__main__':
     object_L.append(link_layer)
     
     #add all the links
-    #client is output, router_a is input, 50 is largest size a packet can be to be transferred over a link
-    link_layer.add_link(link_3.Link(client, 0, router_a, 0, 50))   
-    link_layer.add_link(link_3.Link(server, 0, router_a, 0, 50))
-    link_layer.add_link(link_3.Link(router_a, 0, router_b, 0, 30))  #for part 2, change mtu to 30
-    link_layer.add_link(link_3.Link(router_a, 0, router_c, 0, 30))
-    link_layer.add_link(link_3.Link(router_b, 0, router_d, 0, 30))
-    link_layer.add_link(link_3.Link(router_c, 0, router_d, 0, 30))
-    link_layer.add_link(link_3.Link(router_d, 0, host3, 0, 30))
+    link_layer.add_link(link_3.Link(host1, 0, router_a, 0, 50))   
+    link_layer.add_link(link_3.Link(host2, 0, router_a, 1, 50))
+    link_layer.add_link(link_3.Link(router_a, 0, router_b, 0, mtu))
+    link_layer.add_link(link_3.Link(router_a, 1, router_c, 0, mtu))
+    link_layer.add_link(link_3.Link(router_b, 0, router_d, 0, mtu))
+    link_layer.add_link(link_3.Link(router_c, 0, router_d, 1, mtu))
+    link_layer.add_link(link_3.Link(router_d, 0, host3, 0, mtu))
     
     
     #start all the objects
     thread_L = []
-    thread_L.append(threading.Thread(name=client.__str__(), target=client.run))
-    thread_L.append(threading.Thread(name=server.__str__(), target=server.run))
+    thread_L.append(threading.Thread(name=host1.__str__(), target=host1.run))
+    thread_L.append(threading.Thread(name=host2.__str__(), target=host2.run))
     thread_L.append(threading.Thread(name=host3.__str__(), target=host3.run))
     thread_L.append(threading.Thread(name=router_a.__str__(), target=router_a.run))
     thread_L.append(threading.Thread(name=router_b.__str__(), target=router_b.run))
@@ -74,8 +73,12 @@ if __name__ == '__main__':
     #part 1
     #send message >= 80 characters
     #modify udt_send to break larger data into different packets
-    for i in range(3):
-        client.udt_send(2, 'Adding characters so length is 80.*********************************Sample data %d' % i) #sending data to host 2
+    #Changed to 1 for testing purposes
+    for i in range(1):
+        #Switching between sending host 1 and host 2 to see the output
+        #host1.udt_send(3, 0, 'Adding characters so length is 80, please send to host 3 from host 1**********%d' % i, mtu)
+        host2.udt_send(3, 1, 'Adding characters so length is 80, please send to host 3 from host 2**********%d' % i, mtu)
+                           
     
     
     #give the network sufficient time to transfer all packets before quitting

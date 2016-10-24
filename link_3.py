@@ -38,7 +38,7 @@ class Link:
     ##transmit a packet from the 'from' to the 'to' interface
     def tx_pkt(self):
         pkt_S = self.in_intf.get()
-        if pkt_S is None:
+        if pkt_S is None: 
             return #return if no packet to transfer
         if len(pkt_S) > self.mtu:
             print('%s: packet "%s" length greater then link mtu (%d)' % (self, pkt_S, self.mtu))
