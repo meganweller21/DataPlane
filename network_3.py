@@ -109,7 +109,7 @@ class Host:
         #Offset must be a factor of 8, the full address is 9 characters
         #We start by giving 16 bytes of the data, 16 in the second, and 8 bytes left over
         p1 = NetworkPacket(dst_addr, 16, 1, 0, 0, first_data[:16])
-        #p2 = NetworkPacket(dst_addr, 16, 1, int(16/8), 1, first_data[16:32])
+        p2 = NetworkPacket(dst_addr, 16, 1, int(16/8), 1, first_data[16:32])
         #p3 = NetworkPacket(dst_addr, 8, 0, int(24/8), 0, first_data[32:])
 
         #p4 = NetworkPacket(dst_addr, 16, 1, 0, 1, second_data[:16])
@@ -118,19 +118,18 @@ class Host:
 
         #send packets always enqueued successfully
         self.out_intf_L[0].put(p1.to_byte_S()) 
-        #self.out_intf_L[0].put(p2.to_byte_S())
+        self.out_intf_L[0].put(p2.to_byte_S())
         #self.out_intf_L[0].put(p3.to_byte_S())
         #self.out_intf_L[0].put(p4.to_byte_S())
         #self.out_intf_L[0].put(p5.to_byte_S())
         #self.out_intf_L[0].put(p6.to_byte_S())
 
         print('%s: sending packet "%s"' % (self, p1))
-        #print('%s: sending packet "%s"' % (self, p2))
+        print('%s: sending packet "%s"' % (self, p2))
         #print('%s: sending packet "%s"' % (self, p3))
         #print('%s: sending packet "%s"' % (self, p4))
         #print('%s: sending packet "%s"' % (self, p5))
         #print('%s: sending packet "%s"' % (self, p6))
-        
         
     ## receive packet from the network layer
     #part 2, put packets back together (based on packet's segmentation fields) before printing them out
@@ -160,8 +159,6 @@ class Host:
             if(self.stop):
                 print (threading.currentThread().getName() + ': Ending')
                 return
-        
-
 
 ## Implements a multi-interface router described in class
 class Router:
@@ -197,27 +194,56 @@ class Router:
                     # HERE you will need to implement a lookup into the 
                     # forwarding table to find the appropriate outgoing interface
                     # for now we assume the outgoing interface is also i
-                    if (p.source == 0):     #client
+                    
+                    #packet comes from client
+                    if (p.source == 0):
                         first_router = self.routing_table[0][0]
                         second_router = self.routing_table[0][1]
-                        print("Router_" + first_router + "_0", end=" ")
-                        print('forwarding packet "%s"' % (p), end=" ")
-                        print("from interface", i, "to", i)
+                        third_router = self.routing_table[0][2]
 
-                        print("Router_" + second_router + "_0", end=" ")
+                        #in: A0, out: A0
+                        print("Router_" + first_router + "_0", end=": ")
                         print('forwarding packet "%s"' % (p), end=" ")
-                        print("from interface", i, "to", i)
-                    elif (p.source == 1):   #server
+                        print("from interface 0 to 0")
+                        self.out_intf_L[0].put(p.to_byte_S(), True)
+
+                        #in: B0, out: B0
+                        print("Router_" + second_router + "_0", end=": ")
+                        print('forwarding packet "%s"' % (p), end=" ")
+                        print("from interface 0 to 0")
+                        self.out_intf_L[0].put(p.to_byte_S(), True)
+
+                        #in: D0, out: D0
+                        print("Router_" + third_router + "_0", end=": ")
+                        print('forwarding packet "%s"' % (p), end=" ")
+                        print("from interface 0 to 0")
+                        self.out_intf_L[0].put(p.to_byte_S(), True)
+
+                    #packet comes from server
+                    elif (p.source == 1):
                         first_router = self.routing_table[1][0]
                         second_router = self.routing_table[1][1]
-                        print("Router_" + first_router + "_0", end=" ")
-                        print('forwarding packet "%s"' % (p), end=" ")
-                        print("from interface", (i+1), "to", i)
+                        third_router = self.routing_table[1][2]
 
-                        print("Router_" + second_router + "_0", end=" ")
+                        #in: A1, out: A1
+                        print("Router_" + first_router + "_1", end=": ")
                         print('forwarding packet "%s"' % (p), end=" ")
-                        print("from interface", i, "to", i)
-                    self.out_intf_L[i].put(p.to_byte_S(), True) #not correct
+                        print("from interface 1 to 1")
+                        self.out_intf_L[1].put(p.to_byte_S(), True)
+
+                        #in: C0, out: C0
+                        print("Router_" + second_router + "_0", end=": ")
+                        print('forwarding packet "%s"' % (p), end=" ")
+                        print("from interface 0 to 0")
+                        self.out_intf_L[0].put(p.to_byte_S(), True)
+
+                        #in: D1, out: D0
+                        print("Router_" + third_router + "_1", end=": ")
+                        print('forwarding packet "%s"' % (p), end=" ")
+                        print("from interface 1 to 0")
+                        self.out_intf_L[0].put(p.to_byte_S(), True)
+
+                    #self.out_intf_L[i].put(p.to_byte_S(), True) #not correct
                     #print('%s: forwarding packet "%s" from interface %d to %d' % (self, p, i, i))
             except queue.Full:
                 print('%s: packet "%s" lost on interface %d' % (self, p, i))
