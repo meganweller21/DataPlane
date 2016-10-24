@@ -127,11 +127,11 @@ class Host:
     def udt_receive(self):
         pkt_S = self.in_intf_L[0].get()
         if pkt_S is not None:
-            #Get the fragment flag
+            
             p = NetworkPacket.from_byte_S(pkt_S)
-
+            #the packet to distinguish between the two being sent
             if p.source == 0:
-            #If the fragflag is 1, not complete
+                #If the fragflag is 1, not complete
                 if p.fragflag == 1:
                     self.packet_data1 += p.data_S
                 else:  
@@ -194,10 +194,11 @@ class Router:
                 #if packet exists make a forwarding decision
                 if pkt_S is not None:
                     p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
-                    #part 3, implement routing table
+                    # part 3, implement routing table
                     # HERE you will need to implement a lookup into the 
                     # forwarding table to find the appropriate outgoing interface
                     
+                    #packet comes for host1
                     if (p.source == 0):
                         if self.name == 'A':
                             outgoing = self.routing_table[0][0][1]
@@ -206,7 +207,6 @@ class Router:
                         elif self.name == 'D':
                             outgoing = self.routing_table[0][2][1]
 
-                        #in: A0, out: A0
                         print("Router_" + self.name + "-" + str(i), end=": ")
                         print('forwarding packet "%s"' % (p), end=" ")
                         print("from interface %d to %d" % (i, outgoing))
@@ -226,8 +226,6 @@ class Router:
                         print("from interface %d to %d" % (i, outgoing))
                         self.out_intf_L[outgoing].put(p.to_byte_S(), True)
 
-                    #self.out_intf_L[i].put(p.to_byte_S(), True) #not correct
-                    #print('%s: forwarding packet "%s" from interface %d to %d' % (self, p, i, i))
             except queue.Full:
                 print('%s: packet "%s" lost on interface %d' % (self, p, i))
                 pass

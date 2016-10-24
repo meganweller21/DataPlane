@@ -73,13 +73,10 @@ if __name__ == '__main__':
     #part 1
     #send message >= 80 characters
     #modify udt_send to break larger data into different packets
-    #Changed to 1 for testing purposes
     for i in range(3):
-        #Switching between sending host 1 and host 2 to see the output
         host1.udt_send(3, 0, 'Adding characters so length is 80, please send to host 3 from host 1****packet %d' % i, mtu)
         host2.udt_send(3, 1, 'Adding characters so length is 80, please send to host 3 from host 2****packet %d' % i, mtu)
                            
-    
     
     #give the network sufficient time to transfer all packets before quitting
     sleep(simulation_time)
