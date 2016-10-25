@@ -45,6 +45,9 @@ class NetworkPacket:
     source_length = 1
     
     ##@param dst_addr: address of the destination host
+    # @param length: length of the data coming in
+    # @param fragflag: indication if the packet is ending
+    # @param source: original source address for the packet
     # @param data_S: packet payload
     def __init__(self, dst_addr, length, fragflag, source, data_S):
         self.dst_addr = dst_addr
@@ -98,7 +101,9 @@ class Host:
        
     ## create a packet and enqueue for transmission
     # @param dst_addr: destination address for the packet
+    # @param source: original source address for the packet
     # @param data_S: data being transmitted to the network layer
+    # @param mtu: mtu of the host
     def udt_send(self, dst_addr, source, data_S, mtu):
         packets = []
         length_d = len(data_S)
@@ -129,7 +134,7 @@ class Host:
         if pkt_S is not None:
             
             p = NetworkPacket.from_byte_S(pkt_S)
-            #the packet to distinguish between the two being sent
+            #the packet source to distinguish between the two being sent
             if p.source == 0:
                 #If the fragflag is 1, not complete
                 if p.fragflag == 1:
@@ -170,6 +175,7 @@ class Router:
     # @param intf_count: the number of input interfaces 
     # @param outf_count: the number of output interfaces 
     # @param max_queue_size: max queue length (passed to Interface)
+    # @param routing_table: dict with router name and outgoing interface
     def __init__(self, name, intf_count, outf_count, max_queue_size, routing_table):
         self.stop = False #for thread termination
         self.name = name

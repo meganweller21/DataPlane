@@ -44,6 +44,8 @@ class NetworkPacket:
     length_length = 2
     
     ##@param dst_addr: address of the destination host
+    # @param length: length of the data coming in
+    # @param fragflag: indication if the packet is ending
     # @param data_S: packet payload
     def __init__(self, dst_addr, length, fragflag, data_S):
         self.dst_addr = dst_addr
@@ -73,7 +75,6 @@ class NetworkPacket:
         length_s = int(byte_S[NetworkPacket.dst_addr_S_length : NetworkPacket.dst_addr_S_length + NetworkPacket.length_length])
         fragflag = int(byte_S[NetworkPacket.dst_addr_S_length + NetworkPacket.length_length : NetworkPacket.dst_addr_S_length + NetworkPacket.length_length + NetworkPacket.fragflag_length])
         data_S = byte_S[NetworkPacket.full_length : ]
-
         return self(dst_addr, length_s, fragflag, data_S)
     
 
@@ -95,16 +96,20 @@ class Host:
     ## create a packet and enqueue for transmission
     # @param dst_addr: destination address for the packet
     # @param data_S: data being transmitted to the network layer
+    # @param mtu: mtu of the host
     def udt_send(self, dst_addr, data_S, mtu):
-        #split large data into 2 packets
-    
+
+        #array for packets to send
         packets = []
+        #length- Full length of the data
         length_d = len(data_S)
         start = 0
         end = 0
         
         while (length_d > 0):
+            #If the length + the full address is greater than the mtu, it must be split
             if (length_d + NetworkPacket.full_length > mtu):
+                #data_l is the length we will send minus the full address
                 data_l = mtu - NetworkPacket.full_length
                 end+=data_l
                 p = NetworkPacket(dst_addr, data_l, 1, data_S[start:end])
@@ -112,10 +117,12 @@ class Host:
                 start+=data_l
                 length_d-=data_l
             else:
+                #Must be the end of the packet, send fragflag of 0
                 p = NetworkPacket(dst_addr, length_d, 0, data_S[start:])
                 length_d= 0
                 packets.append(p)
 
+        #Send all packets
         for p in packets:
             self.out_intf_L[0].put(p.to_byte_S()) 
             print('%s: sending packet "%s"' % (self, p))
@@ -126,15 +133,15 @@ class Host:
     def udt_receive(self):
         pkt_S = self.in_intf_L[0].get()
         if pkt_S is not None:
-            #Get the fragment flag
-            fragflag = int (pkt_S[NetworkPacket.dst_addr_S_length + NetworkPacket.length_length : NetworkPacket.dst_addr_S_length + NetworkPacket.fragflag_length + NetworkPacket.length_length])
+            
+            p = NetworkPacket.from_byte_S(pkt_S)
 
             #If the fragflag is 1, not complete
-            if fragflag == 1:
-                self.packet_data += pkt_S[NetworkPacket.dst_addr_S_length + NetworkPacket.length_length + NetworkPacket.fragflag_length :]
+            if p.fragflag == 1:
+                self.packet_data += p.data_S
             else:  
                 #Once fragflag is 0, end of packet therefore print the packet 
-                self.packet_data += pkt_S[NetworkPacket.dst_addr_S_length + NetworkPacket.length_length + NetworkPacket.fragflag_length :]
+                self.packet_data += p.data_S
                 print('%s: received packet "%s"' % (self, self.packet_data))
                 #reset packet_data
                 self.packet_data = ''
